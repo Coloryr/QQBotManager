@@ -32,6 +32,7 @@ impl Client {
     ///   - `None` — 显式禁用代理
     pub fn new() -> Self {
         let builder = reqwest::Client::builder()
+            .no_proxy()
             .timeout(Duration::from_secs(DEFAULT_TIMEOUT))
             .connect_timeout(Duration::from_secs(DEFAULT_TIMEOUT));
 
@@ -210,4 +211,31 @@ static WORK_CLIENT: LazyLock<Arc<Client>> = LazyLock::new(|| Arc::new(Client::ne
 /// 获取全局通用 HTTP 客户端（用于资源下载和一般 API 请求）
 pub fn get_work_client() -> Arc<Client> {
     WORK_CLIENT.clone()
+}
+
+/// 公网 IP 回显服务（返回纯文本本机公网 IP）
+const PUBLIC_IP_SERVICES: [&str; 2] = ["https://api.ipify.org", "https://ipv4.icanhazip.com"];
+
+/// 公网 IP 专用客户端（与全局客户端一致，均直连）
+static IP_CLIENT: LazyLock<Arc<Client>> = LazyLock::new(|| Arc::new(Client::new()));
+
+/// 获取本机公网 IP（强制直连，依次尝试多个回显服务）
+#[tauri::command]
+pub async fn get_public_ip() -> Result<String, String> {
+    let client = &*IP_CLIENT;
+    let mut last_err = String::new();
+    for url in PUBLIC_IP_SERVICES {
+        match client.get_text(url).await {
+            Ok(text) => {
+                let ip = text.trim().to_string();
+                // 简单校验：非空且长度合理（IPv4 最长 15，IPv6 最长 45）
+                if !ip.is_empty() && ip.len() <= 45 {
+                    return Ok(ip);
+                }
+                last_err = format!("服务 {url} 返回了异常内容");
+            }
+            Err(e) => last_err = e,
+        }
+    }
+    Err(format!("无法获取公网 IP：{last_err}"))
 }

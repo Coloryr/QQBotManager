@@ -1,0 +1,51 @@
+name: Release
+
+# 推送 v 开头的 tag 时触发，如 git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust 编译缓存
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: 安装前端依赖
+        run: npm ci
+
+      - name: 构建 Tauri（仅 exe，不打安装包）
+        env:
+          # aws-lc-sys 在 Windows 上使用预编译 NASM 产物，免去安装 NASM
+          AWS_LC_SYS_PREBUILT_NASM: 1
+        run: npm run tauri build -- --no-bundle
+
+      - name: 重命名产物
+        shell: pwsh
+        run: |
+          Copy-Item src-tauri/target/release/qqbot-manager.exe "qqbot-manager-${{ github.ref_name }}-x64.exe"
+
+      - name: 发布到 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: qqbot-manager-${{ github.ref_name }}-x64.exe
+          generate_release_notes: true

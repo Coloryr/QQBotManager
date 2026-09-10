@@ -23,72 +23,173 @@ async function onFetch() {
 <template>
   <section class="view">
     <h2>机器人信息</h2>
-    <div class="row">
+    <p class="hint">
+      使用已保存的 AppID / AppSecret 调用 QQ 开放平台接口
+      <code>GET /users/@me</code>。
+    </p>
+
+    <div class="toolbar">
       <button :disabled="loading" @click="onFetch">
         {{ loading ? "获取中…" : "获取机器人信息" }}
       </button>
     </div>
+    <p v-if="error" class="msg err fetch-error">{{ error }}</p>
 
-    <p v-if="error" class="msg err">{{ error }}</p>
-
-    <div v-if="info" class="card">
-      <div v-if="info.avatar" class="avatar-row">
-        <img :src="info.avatar" alt="头像" class="avatar" referrerpolicy="no-referrer" />
+    <div v-if="info" class="card profile-card">
+      <div class="profile-head">
+        <img
+          v-if="info.avatar"
+          :src="info.avatar"
+          alt="头像"
+          class="avatar"
+          referrerpolicy="no-referrer"
+        />
+        <div v-else class="avatar avatar-placeholder">{{ (info.username || "?").slice(0, 1) }}</div>
+        <div class="profile-titles">
+          <div class="profile-name">
+            {{ info.username || "-" }}
+            <span v-if="info.bot" class="badge badge-bot">机器人</span>
+          </div>
+          <div class="profile-id">{{ info.id || "-" }}</div>
+        </div>
       </div>
-      <table>
-        <tbody>
-          <tr><th>机器人 ID</th><td>{{ info.id || "-" }}</td></tr>
-          <tr><th>名称</th><td>{{ info.username || "-" }}</td></tr>
-          <tr><th>是否机器人</th><td>{{ info.bot ? "是" : "否" }}</td></tr>
-          <tr v-if="info.union_openid"><th>union_openid</th><td>{{ info.union_openid }}</td></tr>
-          <tr v-if="info.union_user_account"><th>union_user_account</th><td>{{ info.union_user_account }}</td></tr>
-        </tbody>
-      </table>
+
+      <div class="kv">
+        <div class="kv-row">
+          <span class="kv-label">机器人 ID</span>
+          <span class="kv-value">{{ info.id || "-" }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">名称</span>
+          <span class="kv-value">{{ info.username || "-" }}</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-label">是否机器人</span>
+          <span class="kv-value">{{ info.bot ? "是" : "否" }}</span>
+        </div>
+        <div v-if="info.union_openid" class="kv-row">
+          <span class="kv-label">union_openid</span>
+          <span class="kv-value">{{ info.union_openid }}</span>
+        </div>
+        <div v-if="info.union_user_account" class="kv-row">
+          <span class="kv-label">union_user_account</span>
+          <span class="kv-value">{{ info.union_user_account }}</span>
+        </div>
+      </div>
     </div>
 
-    <p v-else-if="!loading && !error" class="hint">
-      点击按钮后，将使用已保存的 AppID / AppSecret 通过 curl 调用 QQ 开放平台接口
-      <code>GET /users/@me</code>。
-    </p>
+    <div v-else-if="!loading && !error" class="card empty-card">
+      <p class="hint">点击「获取机器人信息」查看机器人资料。</p>
+    </div>
   </section>
 </template>
 
 <style scoped>
-.row {
+.view {
+  max-width: 880px;
+  margin: 0 auto;
+}
+h2 {
+  text-align: center;
+}
+.view > .hint {
+  text-align: center;
+}
+.toolbar {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin: 20px 0 0;
 }
-.card {
+.fetch-error {
+  margin: 12px 0 0;
+  text-align: center;
+}
+.profile-card {
   max-width: 560px;
-  border: 1px solid rgba(128, 128, 128, 0.35);
-  border-radius: 10px;
-  padding: 16px 20px;
+  margin: 16px auto 0;
+  padding: 0;
+  overflow: hidden;
 }
-.avatar-row {
+.profile-head {
   display: flex;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, var(--accent-soft), transparent 70%);
 }
 .avatar {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.5em;
+  font-weight: 650;
 }
-th,
-td {
-  text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+.profile-titles {
+  min-width: 0;
+}
+.profile-name {
+  font-size: 1.15em;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.profile-id {
+  color: var(--muted);
+  font-size: 0.9em;
   word-break: break-all;
 }
-th {
-  width: 160px;
+.badge {
+  font-size: 0.72em;
   font-weight: 600;
+  border-radius: 5px;
+  padding: 1px 7px;
   white-space: nowrap;
+}
+.badge-bot {
+  color: var(--accent-soft-text);
+  background: var(--accent-soft);
+}
+.kv {
+  padding: 8px 24px 14px;
+}
+.kv-row {
+  display: flex;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95em;
+}
+.kv-row:last-child {
+  border-bottom: none;
+}
+.kv-label {
+  width: 170px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.kv-value {
+  word-break: break-all;
+}
+.empty-card {
+  max-width: 560px;
+  margin: 16px auto 0;
+  padding: 28px 24px;
+  text-align: center;
+}
+.empty-card .hint {
+  margin: 0;
 }
 </style>

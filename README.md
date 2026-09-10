@@ -1,7 +1,10 @@
-# Tauri + Vue + TypeScript
+# QQ机器人管理工具
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+目前支持
+- 修改QQ机器人指令面板
+- 获取机器人基础信息
 
-## Recommended IDE Setup
+## 未来计划
 
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- 修改QQ机器人快捷菜单
+

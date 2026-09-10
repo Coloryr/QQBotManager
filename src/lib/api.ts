@@ -75,18 +75,33 @@ export function fetchBotInfo(): Promise<BotInfo> {
   return invoke("fetch_bot_info");
 }
 
+/** 获取本机公网 IP（用于填写开放平台 IP 白名单） */
+export function getPublicIp(): Promise<string> {
+  return invoke("get_public_ip");
+}
+
 export function listPanels(scope: Scope, cursor?: string | null): Promise<PanelRecordList> {
   return invoke("list_panels", { scope, cursor: cursor ?? null });
 }
 
-export function addPanel(panel: CreatePanelObj): Promise<string> {
+/** 创建面板的响应 */
+export interface CreatePanelResponse {
+  panel_id: string;
+}
+
+/** 编辑面板的响应 */
+export interface EditPanelResponse {
+  version: number;
+}
+
+export function addPanel(panel: CreatePanelObj): Promise<CreatePanelResponse> {
   return invoke("add_panel", { panel });
 }
 
-export function updatePanel(panelId: string, panel: Panel): Promise<string> {
+export function updatePanel(panelId: string, panel: Panel): Promise<EditPanelResponse> {
   return invoke("update_panel", { panelId, panel });
 }
 
-export function deletePanel(panelId: string): Promise<string> {
+export function deletePanel(panelId: string): Promise<Record<string, never>> {
   return invoke("delete_panel", { panelId });
 }

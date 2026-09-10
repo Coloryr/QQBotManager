@@ -1,6 +1,6 @@
 use crate::{
     bot::{
-        create_panel::CreatePanelObj,
+        create_panel::CreatePanel,
         edit_panel::EditPanelResponse,
         get_info::BotInfo,
         get_panel_list::{Panel, PanelRecordList},
@@ -99,7 +99,7 @@ pub async fn list_panels(scope: String, cursor: Option<String>) -> Result<PanelR
 
 /// 创建面板
 #[tauri::command]
-pub async fn add_panel(panel: CreatePanelObj) -> Result<String, String> {
+pub async fn add_panel(panel: CreatePanel) -> Result<create_panel::CreatePanelResponse, String> {
     create_panel::create_panel(panel).await
 }
 
@@ -111,6 +111,6 @@ pub async fn update_panel(panel_id: String, panel: Panel) -> Result<EditPanelRes
 
 /// 删除面板
 #[tauri::command]
-pub async fn delete_panel(panel_id: String) -> Result<String, String> {
+pub async fn delete_panel(panel_id: String) -> Result<delete_panel::DeletePanelResponse, String> {
     delete_panel::delete_panel(&panel_id).await
 }

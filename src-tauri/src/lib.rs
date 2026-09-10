@@ -16,6 +16,7 @@ pub fn run() {
             bot::add_panel,
             bot::update_panel,
             bot::delete_panel,
+            net::get_public_ip,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

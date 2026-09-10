@@ -10,7 +10,7 @@ const URL: &str = "https://api.bot.qq.com/v2/panels";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
-pub struct CreatePanelObj {
+pub struct CreatePanel {
     pub panel: Panel,
     pub target_type: Option<String>,
     pub user_openids: Option<Vec<String>>,
@@ -18,7 +18,7 @@ pub struct CreatePanelObj {
     pub scope: String,
 }
 
-impl Default for CreatePanelObj {
+impl Default for CreatePanel {
     fn default() -> Self {
         Self {
             panel: Default::default(),
@@ -30,7 +30,21 @@ impl Default for CreatePanelObj {
     }
 }
 
-pub async fn create_panel(panel: CreatePanelObj) -> Result<String, String> {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct CreatePanelResponse {
+    pub panel_id: String,
+}
+
+impl Default for CreatePanelResponse {
+    fn default() -> Self {
+        Self {
+            panel_id: Default::default(),
+        }
+    }
+}
+
+pub async fn create_panel(panel: CreatePanel) -> Result<CreatePanelResponse, String> {
     let clinet = net::get_work_client();
 
     let auth = format!("QQBot {}", bot::get_access_token().await?);
