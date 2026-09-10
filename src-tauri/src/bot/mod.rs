@@ -36,6 +36,10 @@ async fn update_access_token(config: &ConfigObj) -> Result<(), String> {
     }
 
     let token = get_token::get_token(&config.app_id, &config.app_secret).await?;
+    if token.access_token.trim().is_empty() || token.expires_in.trim().is_empty() {
+        return Err("校验失败，请检查KEY".into());
+    }
+    
     *TOKEN.write().unwrap() = token.access_token;
     *TIME_OUT.write().unwrap() = get_time_now() + token.expires_in.parse::<u64>().unwrap();
     Ok(())
